@@ -1,0 +1,264 @@
+"""
+Enemy Types Module
+
+This module implements the base enemy class and various enemy types with different
+behaviors and characteristics. Each enemy type extends the base class and implements
+specific movement patterns and attack behaviors.
+
+Classes:
+    Enemy: Base abstract class for all enemy types
+    BasicEnemy: Simple enemy with basic movement and attack patterns
+    FastEnemy: Quick-moving enemy with rapid attacks
+    TankEnemy: Slow but powerful enemy with high health
+    RangedEnemy: Enemy that attacks from a distance
+
+Author: [Your Name]
+Date: [Current Date]
+"""
+
+from abc import ABC, abstractmethod
+from dataclasses import dataclass
+from enum import Enum
+from typing import Optional, Tuple, Dict, Any
+import math
+import random
+
+# Type aliases
+Position = Tuple[float, float]
+Velocity = Tuple[float, float]
+
+class EnemyState(Enum):
+    """Enumeration of possible enemy states."""
+    IDLE = "idle"
+    MOVING = "moving"
+    ATTACKING = "attacking"
+    STUNNED = "stunned"
+    DEAD = "dead"
+
+@dataclass
+class EnemyStats:
+    """Data class containing enemy statistics."""
+    max_health: float
+    movement_speed: float
+    attack_power: float
+    attack_range: float
+    defense: float
+
+class Enemy(ABC):
+    """
+    Abstract base class for all enemy types.
+    
+    Attributes:
+        position (Position): Current position in 2D space
+        stats (EnemyStats): Enemy statistics
+        state (EnemyState): Current enemy state
+        health (float): Current health points
+    """
+
+    def __init__(
+        self,
+        position: Position,
+        stats: EnemyStats
+    ) -> None:
+        """
+        Initialize base enemy attributes.
+
+        Args:
+            position: Initial position (x, y)
+            stats: Enemy statistics
+        """
+        self.position = position
+        self.stats = stats
+        self.state = EnemyState.IDLE
+        self.health = stats.max_health
+        self.velocity: Velocity = (0.0, 0.0)
+
+    @abstractmethod
+    def update(self, delta_time: float) -> None:
+        """
+        Update enemy state and position.
+
+        Args:
+            delta_time: Time elapsed since last update
+        """
+        pass
+
+    @abstractmethod
+    def attack(self) -> float:
+        """
+        Perform attack action.
+
+        Returns:
+            float: Amount of damage dealt
+        """
+        pass
+
+    def take_damage(self, amount: float) -> None:
+        """
+        Apply damage to the enemy.
+
+        Args:
+            amount: Amount of damage to apply
+        """
+        actual_damage = max(0, amount - self.stats.defense)
+        self.health = max(0, self.health - actual_damage)
+        
+        if self.health <= 0:
+            self.state = EnemyState.DEAD
+
+    def move_towards(self, target: Position, delta_time: float) -> None:
+        """
+        Move enemy towards target position.
+
+        Args:
+            target: Target position
+            delta_time: Time elapsed since last update
+        """
+        dx = target[0] - self.position[0]
+        dy = target[1] - self.position[1]
+        distance = math.sqrt(dx * dx + dy * dy)
+        
+        if distance > 0:
+            dx /= distance
+            dy /= distance
+            
+            self.velocity = (
+                dx * self.stats.movement_speed,
+                dy * self.stats.movement_speed
+            )
+            
+            self.position = (
+                self.position[0] + self.velocity[0] * delta_time,
+                self.position[1] + self.velocity[1] * delta_time
+            )
+
+class BasicEnemy(Enemy):
+    """Basic enemy type with simple behavior patterns."""
+
+    def __init__(self, position: Position) -> None:
+        """Initialize BasicEnemy with default stats."""
+        super().__init__(
+            position,
+            EnemyStats(
+                max_health=100.0,
+                movement_speed=100.0,
+                attack_power=10.0,
+                attack_range=1.5,
+                defense=5.0
+            )
+        )
+
+    def update(self, delta_time: float) -> None:
+        """Update basic enemy behavior."""
+        if self.state == EnemyState.DEAD:
+            return
+            
+        # Simple random movement when idle
+        if self.state == EnemyState.IDLE:
+            if random.random() < 0.1:  # 10% chance to start moving
+                self.state = EnemyState.MOVING
+                target = (
+                    self.position[0] + random.uniform(-50, 50),
+                    self.position[1] + random.uniform(-50, 50)
+                )
+                self.move_towards(target, delta_time)
+
+    def attack(self) -> float:
+        """Perform basic attack."""
+        if self.state != EnemyState.DEAD:
+            self.state = EnemyState.ATTACKING
+            return self.stats.attack_power
+        return 0.0
+
+class FastEnemy(Enemy):
+    """Fast-moving enemy with rapid attacks."""
+
+    def __init__(self, position: Position) -> None:
+        """Initialize FastEnemy with speed-focused stats."""
+        super().__init__(
+            position,
+            EnemyStats(
+                max_health=75.0,
+                movement_speed=200.0,
+                attack_power=8.0,
+                attack_range=1.0,
+                defense=2.0
+            )
+        )
+
+    def update(self, delta_time: float) -> None:
+        """Update fast enemy behavior."""
+        if self.state == EnemyState.DEAD:
+            return
+            
+        # Aggressive movement pattern
+        if self.state != EnemyState.ATTACKING:
+            self.state = EnemyState.MOVING
+            # Implementation of fast enemy specific movement pattern
+            pass
+
+    def attack(self) -> float:
+        """Perform rapid attack."""
+        if self.state != EnemyState.DEAD:
+            self.state = EnemyState.ATTACKING
+            return self.stats.attack_power * 1.5  # Bonus attack speed multiplier
+        return 0.0
+
+class TankEnemy(Enemy):
+    """Slow but powerful enemy with high health."""
+
+    def __init__(self, position: Position) -> None:
+        """Initialize TankEnemy with defensive stats."""
+        super().__init__(
+            position,
+            EnemyStats(
+                max_health=200.0,
+                movement_speed=50.0,
+                attack_power=15.0,
+                attack_range=2.0,
+                defense=15.0
+            )
+        )
+
+    def update(self, delta_time: float) -> None:
+        """Update tank enemy behavior."""
+        if self.state == EnemyState.DEAD:
+            return
+            
+        # Slow but steady movement pattern
+        if self.state != EnemyState.ATTACKING:
+            self.state = EnemyState.MOVING
+            # Implementation of tank enemy specific movement pattern
+            pass
+
+    def attack(self) -> float:
+        """Perform powerful attack."""
+        if self.state != EnemyState.DEAD:
+            self.state = EnemyState.ATTACKING
+            return self.stats.attack_power * 2.0  # Heavy attack multiplier
+        return 0.0
+
+def create_enemy(enemy_type: str, position: Position) -> Enemy:
+    """
+    Factory function to create enemies of specified type.
+
+    Args:
+        enemy_type: Type of enemy to create
+        position: Initial position for the enemy
+
+    Returns:
+        Enemy: New enemy instance
+
+    Raises:
+        ValueError: If enemy_type is not recognized
+    """
+    enemy_classes = {
+        "basic": BasicEnemy,
+        "fast": FastEnemy,
+        "tank": TankEnemy
+    }
+
+    if enemy_type not in enemy_classes:
+        raise ValueError(f"Unknown enemy type: {enemy_type}")
+
+    return enemy_classes[enemy_type](position)
