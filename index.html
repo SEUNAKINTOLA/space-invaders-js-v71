@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Canvas Setup</title>
+    <style>
+        /* Canvas container styling */
+        #canvas-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+
+        /* Canvas styling */
+        #gameCanvas {
+            border: 1px solid #333;
+            background-color: white;
+            /* Prevent blurry rendering on high DPI displays */
+            image-rendering: -moz-crisp-edges;
+            image-rendering: -webkit-crisp-edges;
+            image-rendering: pixelated;
+            image-rendering: crisp-edges;
+        }
+    </style>
+</head>
+<body>
+    <div id="canvas-container">
+        <canvas id="gameCanvas"></canvas>
+    </div>
+
+    <script>
+        // Canvas initialization and context setup
+        const initCanvas = () => {
+            try {
+                // Get canvas element
+                const canvas = document.getElementById('gameCanvas');
+                if (!canvas) {
+                    throw new Error('Canvas element not found');
+                }
+
+                // Set canvas dimensions
+                canvas.width = 800;  // Default width
+                canvas.height = 600; // Default height
+
+                // Get 2D rendering context
+                const ctx = canvas.getContext('2d');
+                if (!ctx) {
+                    throw new Error('Failed to get 2D context');
+                }
+
+                // Optional: Setup high DPI canvas for sharp rendering
+                setupHighDPICanvas(canvas, ctx);
+
+                return ctx;
+            } catch (error) {
+                console.error('Canvas initialization failed:', error);
+                // Display user-friendly error message
+                document.getElementById('canvas-container').innerHTML = 
+                    '<div class="error">Failed to initialize canvas. Please check your browser compatibility.</div>';
+                return null;
+            }
+        };
+
+        // High DPI setup for sharp rendering
+        const setupHighDPICanvas = (canvas, ctx) => {
+            // Get device pixel ratio
+            const dpr = window.devicePixelRatio || 1;
+            
+            // Get canvas style dimensions
+            const rect = canvas.getBoundingClientRect();
+
+            // Set canvas dimensions accounting for device pixel ratio
+            canvas.width = rect.width * dpr;
+            canvas.height = rect.height * dpr;
+
+            // Scale canvas context
+            ctx.scale(dpr, dpr);
+
+            // Set CSS dimensions
+            canvas.style.width = `${rect.width}px`;
+            canvas.style.height = `${rect.height}px`;
+        };
+
+        // Initialize canvas when document is loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            const ctx = initCanvas();
+            if (ctx) {
+                // Example: Draw something to test the canvas
+                ctx.fillStyle = '#007bff';
+                ctx.fillRect(10, 10, 100, 100);
+            }
+        });
+    </script>
+</body>
+</html>
