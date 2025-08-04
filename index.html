@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Canvas Game Area</title>
+    <style>
+        /* Ensure canvas is centered and has a visible border */
+        #gameCanvas {
+            border: 1px solid #000;
+            display: block;
+            margin: 0 auto;
+            background: #fff;
+        }
+
+        /* Basic page styling */
+        body {
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+    </style>
+</head>
+<body>
+    <!-- Main game canvas element -->
+    <canvas id="gameCanvas" width="800" height="600"></canvas>
+
+    <script>
+        // Game configuration constants
+        const CANVAS_WIDTH = 800;
+        const CANVAS_HEIGHT = 600;
+        const FPS = 60;
+
+        // Get canvas context
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // Error handling for canvas support
+        if (!ctx) {
+            console.error('Your browser does not support Canvas API');
+            alert('Your browser does not support Canvas API. Please use a modern browser.');
+            throw new Error('Canvas API not supported');
+        }
+
+        /**
+         * Game state class to manage game variables
+         */
+        class GameState {
+            constructor() {
+                this.isRunning = false;
+                this.lastTime = 0;
+                this.deltaTime = 0;
+            }
+        }
+
+        // Initialize game state
+        const gameState = new GameState();
+
+        /**
+         * Main game loop
+         * @param {number} timestamp - Current timestamp from requestAnimationFrame
+         */
+        function gameLoop(timestamp) {
+            // Calculate delta time
+            if (gameState.lastTime === 0) {
+                gameState.lastTime = timestamp;
+            }
+            gameState.deltaTime = (timestamp - gameState.lastTime) / 1000; // Convert to seconds
+            gameState.lastTime = timestamp;
+
+            // Clear canvas
+            ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+
+            // Update game logic here
+            update(gameState.deltaTime);
+
+            // Render game elements here
+            render();
+
+            // Request next frame
+            if (gameState.isRunning) {
+                requestAnimationFrame(gameLoop);
+            }
+        }
+
+        /**
+         * Update game logic
+         * @param {number} deltaTime - Time elapsed since last frame
+         */
+        function update(deltaTime) {
+            // Add game update logic here
+        }
+
+        /**
+         * Render game elements
+         */
+        function render() {
+            // Add rendering logic here
+            
+            // Example: Draw a test rectangle
+            ctx.fillStyle = '#00f';
+            ctx.fillRect(CANVAS_WIDTH / 2 - 25, CANVAS_HEIGHT / 2 - 25, 50, 50);
+        }
+
+        /**
+         * Initialize the game
+         */
+        function initGame() {
+            try {
+                // Set canvas dimensions
+                canvas.width = CANVAS_WIDTH;
+                canvas.height = CANVAS_HEIGHT;
+
+                // Start game loop
+                gameState.isRunning = true;
+                requestAnimationFrame(gameLoop);
+
+            } catch (error) {
+                console.error('Error initializing game:', error);
+                alert('Failed to initialize game. Please refresh the page.');
+            }
+        }
+
+        /**
+         * Event listener for when the page loads
+         */
+        window.addEventListener('load', () => {
+            initGame();
+        });
+
+        /**
+         * Event listener for window resize
+         */
+        window.addEventListener('resize', () => {
+            // Add resize handling if needed
+        });
+
+        /**
+         * Error handling for unexpected errors
+         */
+        window.addEventListener('error', (event) => {
+            console.error('Runtime error:', event.error);
+            gameState.isRunning = false;
+        });
+    </script>
+</body>
+</html>
